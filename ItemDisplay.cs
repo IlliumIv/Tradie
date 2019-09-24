@@ -6,8 +6,8 @@ namespace Tradie
     public class ItemDisplay
     {
         public IEnumerable<Item> Items { get; set; }
-        public int X { get; set; }
-        public int Y { get; set; }
+        public float X { get; set; }
+        public float Y { get; set; }
         public int TextSize { get; set; }
         public Color TextColor { get; set; }
         public Color BackgroundColor { get; set; }
@@ -22,7 +22,7 @@ namespace Tradie
 
         }
 
-        public ItemDisplay(IEnumerable<Item> items, int x, int y, int textSize, int imageSize, int spacing,
+        public ItemDisplay(IEnumerable<Item> items, float x, float y, int textSize, int imageSize, int spacing,
             Color textColor, Color backgroundColor, int backgroundTransparency, bool leftAlignment, bool ascending)
         {
             Items = items;

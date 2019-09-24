@@ -3,18 +3,17 @@ using System.Collections.Generic;
 using System.IO;
 using System.Linq;
 using System.Net;
-using PoeHUD.Hud.Menu;
-using PoeHUD.Plugins;
-using PoeHUD.Poe;
-using PoeHUD.Poe.Components;
-using PoeHUD.Poe.Elements;
+using ExileCore;
+using ExileCore.PoEMemory;
+using ExileCore.PoEMemory.Components;
+using ExileCore.PoEMemory.Elements.InventoryElements;
+using ExileCore.Shared.Enums;
 using SharpDX;
-using SharpDX.Direct3D9;
-using Map = PoeHUD.Poe.Components.Map;
+using Vector2N = System.Numerics.Vector2;
 
 namespace Tradie
 {
-    public class Core : BaseSettingsPlugin<Settings>
+    public class TradieCore : BaseSettingsPlugin<TradieSettings>
     {
         private readonly List<string> _whiteListedPaths = new List<string>
         {
@@ -22,7 +21,18 @@ namespace Tradie
                 "Art/2DItems/Maps"
         };
 
-        public Core() => PluginName = "Tradie";
+        public override bool Initialise()
+        {
+            Name = "Tradie";
+
+            var WindowRect = GameController.Window.GetWindowRectangle();
+            Settings.YourItemStartingLocationY.Max = WindowRect.Width;
+            Settings.YourItemStartingLocationY.Max = WindowRect.Height;
+            Settings.TheirItemStartingLocationX.Max = WindowRect.Width;
+            Settings.TheirItemStartingLocationY.Max = WindowRect.Height;
+
+            return true;
+        }
 
         //public override void InitialiseMenu(MenuItem mainMenu)
         //{
@@ -144,14 +154,39 @@ namespace Tradie
             var newColor = data.BackgroundColor;
             newColor.A = (byte) data.BackgroundTransparency;
             var maxCount = data.Items.Max(i => i.Amount);
-            var background = new RectangleF(data.LeftAlignment ? data.X : data.X + data.ImageSize, data.Y, data.LeftAlignment ? +data.ImageSize + data.Spacing + 3 + Graphics.MeasureText(symbol + " " + maxCount, data.TextSize).Width : -data.ImageSize - data.Spacing - 3 - Graphics.MeasureText(symbol + " " + maxCount, data.TextSize).Width, data.Ascending ? -data.ImageSize * data.Items.Count() : data.ImageSize * data.Items.Count());
+
+            string toMeasure = symbol + " " + maxCount;
+            Vector2N measuredString = Graphics.MeasureText(toMeasure, data.TextSize);
+
+            // Holy shit!
+            var background = new RectangleF(
+                data.LeftAlignment ? data.X : data.X + data.ImageSize,
+                data.Y, 
+                data.LeftAlignment ? + data.ImageSize + data.Spacing + 3
+                + measuredString.X : - data.ImageSize - data.Spacing - 3 - measuredString.X,
+                data.Ascending ? - data.ImageSize * data.Items.Count() : data.ImageSize * data.Items.Count()
+                );
+
             Graphics.DrawBox(background, newColor);
             foreach (var ourItem in data.Items)
             {
                 counter++;
-                var imageBox = new RectangleF(data.X, data.Ascending ? data.Y - counter * data.ImageSize : data.Y - data.ImageSize + counter * data.ImageSize, data.ImageSize, data.ImageSize);
+                var imageBox = new RectangleF(
+                    data.X,
+                    data.Ascending ? data.Y - counter * data.ImageSize : data.Y - data.ImageSize + counter * data.ImageSize,
+                    data.ImageSize, data.ImageSize
+                    );
                 DrawImage(ourItem.Path, imageBox);
-                Graphics.DrawText(data.LeftAlignment ? $"{symbol} {ourItem.Amount}" : $"{ourItem.Amount} {symbol}", data.TextSize, new Vector2(data.LeftAlignment ? data.X + data.ImageSize + data.Spacing : data.X - data.Spacing, imageBox.Center.Y - data.TextSize / 2 - 3), data.TextColor, data.LeftAlignment ? FontDrawFlags.Left : FontDrawFlags.Right);
+                Graphics.DrawText(
+                    data.LeftAlignment ? $"{symbol} {ourItem.Amount}" : $"{ourItem.Amount} {symbol}",
+                    new Vector2(
+                        data.LeftAlignment ? data.X + data.ImageSize + data.Spacing : data.X - data.Spacing,
+                        imageBox.Center.Y - data.TextSize / 2 - 3
+                        ),
+                    data.TextColor,
+                    data.TextSize,
+                    data.LeftAlignment ? FontAlign.Left : FontAlign.Right
+                    );
             }
         }
 
@@ -159,7 +194,7 @@ namespace Tradie
         {
             try
             {
-                Graphics.DrawPluginImage(path, rec);
+                Graphics.DrawImage(Path.GetFileName(path), rec);
             }
             catch
             {
@@ -273,7 +308,7 @@ namespace Tradie
             metadata = metadata.Replace(".dds", ".png");
             var url = $"http://webcdn.pathofexile.com/image/{metadata}";
             var metadataPath = metadata.Replace('/', '\\');
-            var fullPath = $"{PluginDirectory}\\images\\{metadataPath}";
+            var fullPath = $"{DirectoryFullName}\\images\\{metadataPath}";
 
             /////////////////////////// Yucky Map bits ///////////////////////////////
             if (invItem.Item.HasComponent<Map>())
@@ -288,17 +323,21 @@ namespace Tradie
                 }
 
                 url = $"http://webcdn.pathofexile.com/image/{metadata}?mn=1&mr={isShapedMap}&mt={mapTier}";
-                fullPath = $"{PluginDirectory}\\images\\{metadataPath.Replace(".png", "")}_{mapTier}_{isShapedMap}.png";
+                fullPath = $"{DirectoryFullName}\\images\\{metadataPath.Replace(".png", "")}_{mapTier}_{isShapedMap}.png";
             }
             //
 
             if (File.Exists(fullPath))
+            {
+                Graphics.InitImage(fullPath, false);
                 return fullPath;
+            }
             var path = fullPath.Substring(0, fullPath.LastIndexOf('\\'));
             Directory.CreateDirectory(path);
             using (var client = new WebClient())
             {
                 client.DownloadFile(new Uri(url), fullPath);
+                Graphics.InitImage(fullPath, false);
             }
 
             return fullPath;
