@@ -20,7 +20,7 @@ namespace Tradie
             YourItemStartingLocationY = new RangeNode<float>(863, 0, 1000);
             YourItemsAscending = new ToggleNode(true);
             YourItemTextColor = Color.LightBlue;
-            YourItemBackgroundColor = Color.Black;
+            // YourItemBackgroundColor = Color.Black;
             YourItemsImageLeftOrRight = new ToggleNode(true);
 
             // TheirItemStartingLocationX = new RangeNode<int>(966, 0, (int)BasePlugin.API.GameController.Window.GetWindowRectangle().Width);
@@ -29,13 +29,13 @@ namespace Tradie
             TheirItemStartingLocationY = new RangeNode<float>(863, 0, 1000);
             TheirItemsAscending = new ToggleNode(false);
             TheirItemTextColor = Color.Red;
-            TheirItemBackgroundColor = Color.Black;
+            // TheirItemBackgroundColor = Color.Black;
             TheirItemsImageLeftOrRight = new ToggleNode(false);
         }
 
         [Menu("Image Size")]
         public RangeNode<int> ImageSize { get; set; }
-        [Menu("Text Size")]
+        [Menu("Text Size", "Not work atm in ExileApi")]
         public RangeNode<int> TextSize { get; set; }
         [Menu("Spacing", "Spacing between image and text")]
         public RangeNode<int> Spacing { get; set; }
@@ -52,8 +52,10 @@ namespace Tradie
         public ToggleNode YourItemsImageLeftOrRight { get; set; }
         [Menu("Text Color", 10015, 1001)]
         public ColorNode YourItemTextColor { get; set; }
-        [Menu("Background Color", 10016, 1001)]
-        public ColorNode YourItemBackgroundColor { get; set; }
+        // [Menu("Background Color", 10016, 1001)]
+        // public ColorNode YourItemBackgroundColor { get; set; }
+        [Menu("Background Transparency", 10017, 1001)]
+        public RangeNode<int> YourItemBackgroundTransparency { get; set; } = new RangeNode<int>(0, 0, 255);
 
         [Menu("Their Trade Items", 2001)]
         public EmptyNode Blank2 { get; set; }
@@ -67,8 +69,11 @@ namespace Tradie
         public ToggleNode TheirItemsImageLeftOrRight { get; set; }
         [Menu("Text Color", 20015, 2001)]
         public ColorNode TheirItemTextColor { get; set; }
-        [Menu("Background Color", 20016, 2001)]
-        public ColorNode TheirItemBackgroundColor { get; set; }
+        // [Menu("Background Color", 20016, 2001)]
+        // public ColorNode TheirItemBackgroundColor { get; set; }
+        [Menu("Background Transparency", 20017, 2001)]
+        public RangeNode<int> TheirItemBackgroundTransparency { get; set; } = new RangeNode<int>(0, 0, 255);
         public ToggleNode Enable { get; set; }
+        public ToggleNode Debug { get; set; } = new ToggleNode(false);
     }
 }

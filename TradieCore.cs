@@ -31,6 +31,9 @@ namespace Tradie
             Settings.TheirItemStartingLocationX.Max = WindowRect.Width;
             Settings.TheirItemStartingLocationY.Max = WindowRect.Height;
 
+            var combine = Path.Combine(DirectoryFullName, "background.png").Replace('\\', '/');
+            Graphics.InitImage(combine, false);
+
             return true;
         }
 
@@ -80,8 +83,9 @@ namespace Tradie
                     Y = Settings.YourItemStartingLocationY,
                     TextSize = Settings.TextSize,
                     TextColor = Settings.YourItemTextColor,
-                    BackgroundColor = Settings.YourItemBackgroundColor,
-                    BackgroundTransparency = Settings.YourItemBackgroundColor.Value.A,
+                    // BackgroundColor = Settings.YourItemBackgroundColor,
+                    BackgroundColor = new Color(0, 0, 0),
+                    BackgroundTransparency = Settings.YourItemBackgroundTransparency.Value,
                     ImageSize = Settings.ImageSize,
                     Spacing = Settings.Spacing,
                     LeftAlignment = Settings.YourItemsImageLeftOrRight,
@@ -94,8 +98,9 @@ namespace Tradie
                     Y = Settings.TheirItemStartingLocationY,
                     TextSize = Settings.TextSize,
                     TextColor = Settings.TheirItemTextColor,
-                    BackgroundColor = Settings.TheirItemBackgroundColor,
-                    BackgroundTransparency = Settings.TheirItemBackgroundColor.Value.A,
+                    // BackgroundColor = Settings.TheirItemBackgroundColor,
+                    BackgroundColor = new Color(0, 0, 0),
+                    BackgroundTransparency = Settings.TheirItemBackgroundTransparency.Value,
                     ImageSize = Settings.ImageSize,
                     Spacing = Settings.Spacing,
                     LeftAlignment = Settings.TheirItemsImageLeftOrRight,
@@ -120,8 +125,9 @@ namespace Tradie
                     Y = Settings.YourItemStartingLocationY,
                     TextSize = Settings.TextSize,
                     TextColor = Settings.YourItemTextColor,
-                    BackgroundColor = Settings.YourItemBackgroundColor,
-                    BackgroundTransparency = Settings.YourItemBackgroundColor.Value.A,
+                    // BackgroundColor = Settings.YourItemBackgroundColor,
+                    BackgroundColor = new Color(0, 0, 0),
+                    BackgroundTransparency = Settings.YourItemBackgroundTransparency.Value,
                     ImageSize = Settings.ImageSize,
                     Spacing = Settings.Spacing,
                     LeftAlignment = Settings.YourItemsImageLeftOrRight,
@@ -134,8 +140,9 @@ namespace Tradie
                     Y = Settings.TheirItemStartingLocationY,
                     TextSize = Settings.TextSize,
                     TextColor = Settings.TheirItemTextColor,
-                    BackgroundColor = Settings.TheirItemBackgroundColor,
-                    BackgroundTransparency = Settings.TheirItemBackgroundColor.Value.A,
+                    // BackgroundColor = Settings.TheirItemBackgroundColor,
+                    BackgroundColor = new Color(0, 0, 0),
+                    BackgroundTransparency = Settings.TheirItemBackgroundTransparency.Value,
                     ImageSize = Settings.ImageSize,
                     Spacing = Settings.Spacing,
                     LeftAlignment = Settings.TheirItemsImageLeftOrRight,
@@ -151,7 +158,8 @@ namespace Tradie
         {
             const string symbol = "-";
             var counter = 0;
-            var newColor = data.BackgroundColor;
+            // var newColor = data.BackgroundColor;
+            var newColor = new Color(255, 255, 255, 0);
             newColor.A = (byte) data.BackgroundTransparency;
             var maxCount = data.Items.Max(i => i.Amount);
 
@@ -162,31 +170,31 @@ namespace Tradie
             var background = new RectangleF(
                 data.LeftAlignment ? data.X : data.X + data.ImageSize,
                 data.Y, 
-                data.LeftAlignment ? + data.ImageSize + data.Spacing + 3
-                + measuredString.X : - data.ImageSize - data.Spacing - 3 - measuredString.X,
+                data.LeftAlignment ? + data.ImageSize + data.Spacing + 9
+                    + measuredString.X : - data.ImageSize - data.Spacing - 9 - measuredString.X,
                 data.Ascending ? - data.ImageSize * data.Items.Count() : data.ImageSize * data.Items.Count()
                 );
 
-            Graphics.DrawBox(background, newColor);
+            // Graphics.DrawBox(background, newColor);
+            Graphics.DrawFrame(background, Color.DimGray, 1);
+
             foreach (var ourItem in data.Items)
             {
                 counter++;
-                var imageBox = new RectangleF(
-                    data.X,
-                    data.Ascending ? data.Y - counter * data.ImageSize : data.Y - data.ImageSize + counter * data.ImageSize,
-                    data.ImageSize, data.ImageSize
-                    );
+                var imageBox = new RectangleF(data.X,
+                                              data.Ascending ? data.Y - counter * data.ImageSize : data.Y - data.ImageSize + counter * data.ImageSize,
+                                              data.ImageSize,
+                                              data.ImageSize);
+                var textPlace = new Vector2(data.LeftAlignment ? data.X + data.ImageSize + data.Spacing : data.X - data.Spacing,
+                                            imageBox.Center.Y - data.TextSize / 2 - 3);
+                Graphics.DrawText(data.LeftAlignment ? $"{symbol} {ourItem.Amount}" : $"{ourItem.Amount} {symbol}",
+                                  textPlace,
+                                  data.TextColor,
+                                  data.TextSize,
+                                  data.LeftAlignment ? FontAlign.Left : FontAlign.Right);
+
+                Graphics.DrawImage("background.png", new RectangleF(background.X, imageBox.Y, background.Width, imageBox.Height), newColor);
                 DrawImage(ourItem.Path, imageBox);
-                Graphics.DrawText(
-                    data.LeftAlignment ? $"{symbol} {ourItem.Amount}" : $"{ourItem.Amount} {symbol}",
-                    new Vector2(
-                        data.LeftAlignment ? data.X + data.ImageSize + data.Spacing : data.X - data.Spacing,
-                        imageBox.Center.Y - data.TextSize / 2 - 3
-                        ),
-                    data.TextColor,
-                    data.TextSize,
-                    data.LeftAlignment ? FontAlign.Left : FontAlign.Right
-                    );
             }
         }
 
@@ -196,8 +204,10 @@ namespace Tradie
             {
                 Graphics.DrawImage(Path.GetFileName(path), rec);
             }
-            catch
+            catch (Exception e)
             {
+                if (Settings.Debug)
+                    LogError($"{Name}: Cannot DrawImage:\n" + e.Message, 10);
                 return false;
             }
 
@@ -208,10 +218,12 @@ namespace Tradie
         {
             try
             {
-                return GameController.Game.IngameState.UIRoot.Children[1].Children[75].Children[3].Children[1].Children[0].Children[0];
+                return GameController.Game.IngameState.UIRoot.Children[1].Children[79].Children[3].Children[1].Children[0].Children[0];
             }
-            catch
+            catch (Exception e)
             {
+                if (Settings.Debug)
+                    LogError($"{Name}: Cannot get TradingWindow:\n" + e.Message, 10);
                 return null;
             }
         }
@@ -220,10 +232,12 @@ namespace Tradie
         {
             try
             {
-                return GameController.Game.IngameState.UIRoot.Children[1].Children[74].Children[3];
+                return GameController.Game.IngameState.UIRoot.Children[1].Children[78].Children[3];
             }
-            catch
+            catch(Exception e)
             {
+                if (Settings.Debug)
+                    LogError($"{Name}: Cannot get NpcTradeWindow:\n" + e.Message, 10);
                 return null;
             }
         }
@@ -297,7 +311,7 @@ namespace Tradie
                 }
                 catch
                 {
-                    LogError("Tradie: Sometime went wrong in GetItemObjects() for a brief moment", 5);
+                    LogError($"{Name}: Sometime went wrong in GetItemObjects() for a brief moment", 5);
                 }
 
             return items;
