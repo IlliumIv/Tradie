@@ -289,7 +289,9 @@ namespace Tradie
                 try
                 {
                     if (normalInventoryItem.Item == null) continue;
-                    var metaData = normalInventoryItem.Item.GetComponent<RenderItem>().ResourcePath;
+                    string metaData = "";
+                    // if(normalInventoryItem.Item.HasComponent<RenderItem>())
+                        metaData = normalInventoryItem.Item.GetComponent<RenderItem>().ResourcePath;
                     if (metaData.Equals("")) continue;
                     var stack = normalInventoryItem.Item.GetComponent<Stack>();
                     var amount = stack?.Info == null ? 1 : stack.Size;
@@ -309,9 +311,9 @@ namespace Tradie
                     var path = GetImagePath(metaData, normalInventoryItem);
                     items.Add(new Item(name, amount, path));
                 }
-                catch
+                catch (Exception e)
                 {
-                    LogError($"{Name}: Sometime went wrong in GetItemObjects() for a brief moment", 5);
+                    LogError($"{Name}: Sometime went wrong in GetItemObjects() for a brief moment\n{e.Message}\n{e.StackTrace}", 5);
                 }
 
             return items;
