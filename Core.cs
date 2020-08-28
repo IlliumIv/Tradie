@@ -22,7 +22,7 @@ namespace Tradie
                 //"Art/2DItems/Maps"
         };
 
-        private List<string> _initializedImageList = new List<string>();
+        private readonly List<string> _initializedImageList = new List<string>();
 
         public override void Render()
         {
@@ -37,10 +37,10 @@ namespace Tradie
             var npcTradingWindow = GetNpcTadeWindow();
             if (npcTradingWindow == null || !npcTradingWindow.IsVisible)
                 return;
-            var tradingItems = GetItemsInTradingWindow(npcTradingWindow);
+            var (ourItems, theirItems) = GetItemsInTradingWindow(npcTradingWindow);
             var ourData = new ItemDisplay
             {
-                Items = GetItemObjects(tradingItems.ourItems).OrderBy(item => item.Path),
+                Items = GetItemObjects(ourItems).OrderBy(item => item.Path),
                 X = Settings.YourItemStartingLocationX,
                 Y = Settings.YourItemStartingLocationY,
                 TextSize = Settings.TextSize,
@@ -54,7 +54,7 @@ namespace Tradie
             };
             var theirData = new ItemDisplay
             {
-                Items = GetItemObjects(tradingItems.theirItems).OrderBy(item => item.Path),
+                Items = GetItemObjects(theirItems).OrderBy(item => item.Path),
                 X = Settings.TheirItemStartingLocationX,
                 Y = Settings.TheirItemStartingLocationY,
                 TextSize = Settings.TextSize,
@@ -77,10 +77,10 @@ namespace Tradie
             var tradingWindow = GetTradingWindow();
             if (tradingWindow == null || !tradingWindow.IsVisible)
                 return;
-            var tradingItems = GetItemsInTradingWindow(tradingWindow);
+            var (ourItems, theirItems) = GetItemsInTradingWindow(tradingWindow);
             var ourData = new ItemDisplay
             {
-                Items = GetItemObjects(tradingItems.ourItems).OrderBy(item => item.Path),
+                Items = GetItemObjects(ourItems).OrderBy(item => item.Path),
                 X = Settings.YourItemStartingLocationX,
                 Y = Settings.YourItemStartingLocationY,
                 TextSize = Settings.TextSize,
@@ -94,7 +94,7 @@ namespace Tradie
             };
             var theirData = new ItemDisplay
             {
-                Items = GetItemObjects(tradingItems.theirItems).OrderBy(item => item.Path),
+                Items = GetItemObjects(theirItems).OrderBy(item => item.Path),
                 X = Settings.TheirItemStartingLocationX,
                 Y = Settings.TheirItemStartingLocationY,
                 TextSize = Settings.TextSize,
